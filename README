@@ -1,0 +1,41 @@
+Aaron VanderGraaff
+5/12/19
+
+This is intended as a cubic spline library for Arduino. It's written in pure
+C because I don't know C++, so it will run on any architecture 
+compiled with gcc or g++ as long as there are stdlib functions (ie malloc). 
+One caveat is that with an older compiler (pre C99 I think, no idea for 
+C++), the:
+    #ifndef NUMBER_POINTS
+    #define NUMBER_POINTS 20
+    #endif
+lines in spline.h set the maxiumum size for the initital value arrays. 
+This has to do with the calling mechanics for 2-D arrays and could be
+solved using pointers instead, but it works for me so I'm leaving it.
+If your compiler is modern (again, no idea about C++), you can comment out
+those lines and there shouldn't be any limit. 
+
+There ae several functions defined in spline.h; however, you only need 2:
+        S *nat_cubic_spline(float *x, float *y, int num_points) and
+        int evaluate(S *function, float val, float *result)
+
+nat_cubic_spline takes an array of initial x values and an array of initial
+y values to interpolate and the number of points in them. x and y must be
+the same length, x must be sorted in increasing order, and each x, y pair 
+must have the same index in their respective arrays. The function returns
+an S struct pointer, which holds the interpolation parameters.
+nat_cubic_spline performs a natural cubic spline of the given data points,
+as its name suggests.
+
+evaluate takes the an S struct pointer, an x value to interpolate at and an
+int pointer to store the result. This function returns 0 on success, and 
+either -1, -2, or -3 on failure. A return value of -1 or -2 indicates the 
+val passed does not fit in the domain of the initial x values (-1 for too
+small and -2 for too big), and -3 indicates a total failure for some unknown
+reason (this shouldn't happen. If it does, it's a bug). 
+
+The other functions aren't static so you can use them, but their intended
+purpose is as helper functions to nat_cubic_spline and evaluate. Only 
+nat_cubic_spline and evaluate are setup to be run in a C++ program, so if 
+you want to use the other functions in a C++ program, look in spline.h to 
+see how to do that, then alter it.
