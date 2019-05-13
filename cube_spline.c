@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "spline.h"
+#include "cube_spline.h"
 
 
 S *nat_cubic_spline(float *x, float *y, int num_points) {

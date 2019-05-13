@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "../spline.h"
+#include "../cube_spline.h"
 
 
 int main(int argc, char *argv[]) {
