@@ -15,7 +15,7 @@ solved using pointers instead, but it works for me so I'm leaving it.
 If your compiler is modern (again, no idea about C++), you can comment out
 those lines and there shouldn't be any limit. 
 
-There ae several functions defined in spline.h; however, you only need 2:
+There are several functions defined in spline.h; however, you only need 2:
         S *nat_cubic_spline(float *x, float *y, int num_points) and
         int evaluate(S *function, float val, float *result)
 
