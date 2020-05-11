@@ -3,21 +3,25 @@
 #define NUMBER_POINTS 20
 #endif
 
+#define TRUE 1
+#define FALSE 0
+
 typedef struct S S;
 struct S {
-    float *a;
-    float *b;
-    float *c;
-    float *d;
+    float a[NUMBER_POINTS];
+    float b[NUMBER_POINTS];
+    float c[NUMBER_POINTS];
+    float d[NUMBER_POINTS];
     float *x;
     float *y;
     int num_points;
 };
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-S *nat_cubic_spline(float *x, float *y, int num_points); 
+S *nat_cubic_spline(int num_points, S* output); 
 #ifdef __cplusplus
 }
 #endif
@@ -41,4 +45,3 @@ int evaluate(S *function, float val, float *result);
 
 float spline_func(S *function, float val, int i); 
 int almost_equals(float a, float b);
-void *safe_malloc(size_t size);

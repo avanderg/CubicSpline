@@ -2,18 +2,11 @@
 #include "cube_spline.h"
 
 
-S *nat_cubic_spline(float *x, float *y, int num_points) {
+S *nat_cubic_spline(int num_points, S* output_fun) {
     float x_delta[num_points-1]; /* x differences */
     float y_delta[num_points-1]; /* y diffrences */
     float A[num_points][num_points]; /* matrix for solving for c */
     float h[num_points]; /* vector for solving for c */
-    /* Output struct */ 
-    S *output_fun; 
-    /* Output parameters */ 
-    float *a;
-    float *b;
-    float *c;
-    float *d;
 
     /* Goal: create interpolating functions of the form:
        S_j(x) = a_j(x) + b_j(x - x_j) + c_j(x - x_j)^2 + d_j(x - x_j)^3
@@ -31,31 +24,19 @@ S *nat_cubic_spline(float *x, float *y, int num_points) {
         return NULL;
     }
 
-    /* Allocate space on the heap for all output parameters */
-    output_fun = safe_malloc(sizeof(S));
-    a = safe_malloc(num_points*sizeof(float));
-    b = safe_malloc(num_points*sizeof(float));
-    c = safe_malloc(num_points*sizeof(float));
-    d = safe_malloc(num_points*sizeof(float));
 
     /* Assign parameters to our S struct */
-    output_fun->a = a;
-    output_fun->b = b;
-    output_fun->c = c;
-    output_fun->d = d;
-    output_fun->x = x;
-    output_fun->y = y;
     output_fun->num_points = num_points;
 
     /* Build x diff and y diff */
     for (i=1; i<num_points; i++) {
-        x_delta[i-1] = x[i] - x[i-1];
-        y_delta[i-1] = y[i] - y[i-1];
+        x_delta[i-1] = output_fun->x[i] - output_fun->x[i-1];
+        y_delta[i-1] = output_fun->y[i] - output_fun->y[i-1];
     }
 
     /* Build "a" vector (just y) */
     for (i=0; i<num_points; i++) {
-        a[i] = y[i];
+        output_fun->a[i] = output_fun->y[i];
     }
 
 
@@ -64,17 +45,17 @@ S *nat_cubic_spline(float *x, float *y, int num_points) {
 
 
     /* Build h vector */
-    build_h_vector(h, x_delta, a, num_points);
+    build_h_vector(h, x_delta, output_fun->a, num_points);
 
     /* Solve matrix equation for c vector (Ac = h) */
-    solve_matrix(c, h, num_points, A);
+    solve_matrix(output_fun->c, h, num_points, A);
 
     /* Build b vector */
-    build_b_vector(b, x_delta, y_delta, c, num_points);
+    build_b_vector(output_fun->b, x_delta, y_delta, output_fun->c, num_points);
 
 
     /* Build d vector */
-    build_d_vector(d, x_delta, c, num_points);
+    build_d_vector(output_fun->d, x_delta, output_fun->c, num_points);
     
     /* Return S struct containing all the coeffs and init vals */
     return output_fun;
@@ -132,8 +113,8 @@ float *solve_matrix(float *x, float *h, int num_points,
     b[0] = 1.;
     c[0] = 0.;
 
-    a[num_points-1] = 0;
-    b[num_points-1] = 1;
+    a[num_points-1] = 0.;
+    b[num_points-1] = 1.;
 
     /* Build a, b, c */
     for (i=1; i<num_points-1; i++) {
@@ -218,12 +199,6 @@ int evaluate(S *function, float val, float *result) {
             /* return val of 0 means no errors */
             return 0; 
         }
-        /* Note: 
-           Some clock cycles are definitely wasted here, could probably
-           check the  first element before loop starts and drop checking the 
-           ith element and only check the i+1st element. This runs plenty 
-           fast for my uses though.
-        */
 
         /* Check the next element also, since I use the range next */
         else if (almost_equals(val, function->x[i+1])) {
@@ -267,9 +242,6 @@ float spline_func(S *function, float val, int i) {
        returned value from the interpolation.
     */
 
-    /* This could waste some space and clock cycles, depending on how smart the
-       compiler is, could make it a one liner ... but ick.
-    */
     p0 = function->a[i];
     p1 = function->b[i]*(val - function->x[i]);
     p2 = function->c[i]*(val - function->x[i])*(val - function->x[i]);
@@ -290,24 +262,14 @@ int almost_equals(float a, float b) {
         c = -1*c;
     }
     
-    /* If the difference is sufficiently small, return 1 (true) */
+    /* If the difference is sufficiently small, return true */
     if (c < 0.00000001) {
-        return 1;
+        return TRUE;
     }
     
-    /* Otherwise, return 0 (false) */
+    /* Otherwise, return false */
     else {
-        return 0;
+        return FALSE;
     }
 }
 
-void *safe_malloc(size_t size) {
-    /* Error checks malloc so I don't have to write so many if statements */
-
-    void *ptr;
-    if (!(ptr = malloc(size))) {
-        /* If malloc failed, exit ... really wish I could report the error */
-        exit(1);
-    }
-    return ptr;
-}

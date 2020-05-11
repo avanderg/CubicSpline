@@ -1,10 +1,6 @@
 /* This is a pure C example, only difference in arduino usage would be to
    change the printf statements to Serial.print() and replace main with setup
-   then implement some sort of loop. You probably wouldn't free ever because
-   you want to use the malloced things until you're done, but on an Arduino 
-   that's usually forever, so let it get deallocated when you unplug the thing.
-   Also, you don't need the stdio.h or unistd on Arduino (idk if they even
-   exist) but you probably need stdlib for malloc.
+   then implement some sort of loop. 
 */ 
 
 #include <stdlib.h>
@@ -35,14 +31,17 @@ int main(int argc, char *argv[]) {
     /* result of the interpolation */
     float result;
 
-    /* Struct S for interpolation info, make sure not to malloc here b/c it's
-       allocated inside of the nat_cubic_spline function
-    */
-    S *output;
+    /* Struct S for interpolation info */
+
+    S output;
+    S *output_ptr = NULL;
     /* out for checking return values */
     int out;
 
-    output = nat_cubic_spline(x, y, num_points);
+    output.x = x;
+    output.y = y;
+
+    output_ptr = nat_cubic_spline(num_points, &output);
 
     for (i=0; i<num_points-1; i++) {
         /* print polynomial coeffs to compare with a known cubic spline
@@ -50,8 +49,8 @@ int main(int argc, char *argv[]) {
         */
         printf("i: %d\n", i);
         printf("a: %.6f, b: %.2f, c: %.2f, d:%.2f\n\n",
-                output->a[i], output->b[i], 
-                output->c[i], output->d[i]);
+                output.a[i], output.b[i], 
+                output.c[i], output.d[i]);
 
     }
     
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
     for (i=0; i<5; i++) {
 
         /* Make sure to test the return value before we use the result */
-        if ((out=evaluate(output, vals[i], &result)) < 0) {
+        if ((out=evaluate(output_ptr, vals[i], &result)) < 0) {
             /* Should fail on none of the inputs */
            printf("I failed: %d\n", out);
         }
@@ -67,16 +66,7 @@ int main(int argc, char *argv[]) {
         printf("input: %.2f, result: %.7f\n", vals[i], result); 
     }
 
-    /* free everything so my system is happy, probably wouldn't do this on
-       an Arduino unless I only interpolated in my setup (but that would be 
-       weird.
-    */
 
-    free(output->a);
-    free(output->b);
-    free(output->c);
-    free(output->d);
-    free(output);
    
 }
 
@@ -85,12 +75,13 @@ int main(int argc, char *argv[]) {
 
     /* This code interpolates e^x near 0 */
 
-    /* Make parameters not malloced global so we don't lose them when
+    /* Make parameters global so we don't lose them when
        we exit the setup or loop function. Make S global so we can get it
        whenever we want.
     */
 
-    S *output;
+    S output;
+    S *output_ptr = NULL;
     float x[3] = {0, 0.1, 0.2};
     float y[3] = {1, 1.10517, 1.2214};
     int num_points = 3;
@@ -103,7 +94,7 @@ int main(int argc, char *argv[]) {
                .
         */
         /* Make the spline */
-        output = nat_cubic_spline(x, y, num_points);
+        output_ptr = nat_cubic_spline(num_points, &output);
     }
 
     void loop() {

@@ -13,10 +13,10 @@ int main(int argc, char *argv[]) {
        calculator.
     */
 
-    float x[6] = {0.1, 0.6, 2.5, 4, 4.3, 5}; /* Voltage measured */
-    float y[6] = {0.1, 1, 10, 43, 100, 1000}; /* Lux out */
+    float x[3] = {0, 2.5, 5}; /* Voltage measured */
+    float y[3] = {0, 1000, 2000}; /* Lux out */
     /* We have 5 points */
-    int num_points = 6;
+    int num_points = 3;
     int i; /* loop index, as usual */
     /* Just some dumby values to test our interpolation, in the real world
        this part would probably be in loop and you'd get the value from a 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
     /* Struct S for interpolation info */
     S output;
-    S* output_ptr = NULL;
+    S *output_ptr = NULL;
     /* out for checking return values */
     int out;
 
@@ -61,5 +61,5 @@ int main(int argc, char *argv[]) {
         printf("input: %.2f, result: %.7f\n", vals[i], result); 
     }
 
-   
 }
+   

@@ -1,29 +1,34 @@
 Aaron VanderGraaff
-5/12/19
+3/26/20
 
 This is intended as a cubic spline library for Arduino. It's written in pure
-C because I don't know C++, so it will run on any architecture 
-compiled with gcc or g++ as long as there are stdlib functions (ie malloc). 
-One caveat is that with an older compiler (pre C99 I think, no idea for 
-C++), the:
+C, so it will run on any architecture compiled with gcc or g++ as long as 
+there are stdlib functions. 
+The:
     #ifndef NUMBER_POINTS
     #define NUMBER_POINTS 20
     #endif
 lines in spline.h set the maxiumum size for the initital value arrays. 
 This has to do with the calling mechanics for 2-D arrays and could be
-solved using pointers instead, but it works for me so I'm leaving it.
-If your compiler is modern (again, no idea about C++), you can comment out
-those lines and there shouldn't be any limit. 
+solved using pointers instead, but it works for me so I'm leaving it. It also
+defines the size of the arrays in the initial S struct. The value can be 
+adjusted to fit different needs to save memory or for bigger data sets.
 
 There are several functions defined in spline.h; however, you only need 2:
-        S *nat_cubic_spline(float *x, float *y, int num_points) and
+        S *nat_cubic_spline(int num_points, S* output) and
         int evaluate(S *function, float val, float *result)
 
-nat_cubic_spline takes an array of initial x values and an array of initial
-y values to interpolate and the number of points in them. x and y must be
-the same length, x must be sorted in increasing order, and each x, y pair 
-must have the same index in their respective arrays. The function returns
-an S struct pointer, which holds the interpolation parameters.
+Before calling nat_cubic_spline, arrays of initial x and y values must be
+created and put inside of an S struct. x and y must be the same length, x must
+be sorted in increasing order, and each x,y pair must have the same index in
+their respective arrays. Take a look at the "examples" directory for a few 
+examples.
+
+nat_cubic_spline takes the number of points in the x and y arrays and an S
+struct to store all results in. 
+The function returns an S struct pointer, which holds the interpolation 
+parameters. The output is also stored in the original S struct passed to 
+the funciton.
 nat_cubic_spline performs a natural cubic spline of the given data points,
 as its name suggests.
 
